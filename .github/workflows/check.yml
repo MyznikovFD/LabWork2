@@ -1,0 +1,31 @@
+name: workflow CI
+
+on:
+  push:
+    branches:
+      - branch1
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++ libgtest-dev -y
+      
+      - name: Build project
+        run: make all
+        
+      - name: Build test
+        run: make test
+
+      - name: Run tests
+        run: ./test
