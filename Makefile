@@ -1,6 +1,6 @@
 PROJECT = LabWork2
 
-TESTPROJECT = test-$(PROJECT)
+TESTPROJECT = test
 
 CXX = g++
 
