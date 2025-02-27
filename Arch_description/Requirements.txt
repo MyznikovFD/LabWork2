@@ -1,0 +1,15 @@
+Ability to recieve detailed information of cards.
+
+Ability to play PvP using one device:
+    -distribution of cards
+    -laying out of cards
+    -realization cards' actions
+    -determination a round winner
+    -reset of cards
+    -determination a game winner
+
+
+
+
+Ability to play PvE:
+    
