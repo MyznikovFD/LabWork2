@@ -1,0 +1,169 @@
+@startuml
+
+package Interface_facilities {
+class Interface {
+-Hand hand
+-Playing_field
++void description(Card card)
++void display_cards()
++void put(Card card)
+}
+}
+
+
+
+package Graphics {
+class Pl_field_graph {
++void display_pl_field(Playing_field PF)
+}
+class Hand_graph {
++void display_hand(Hand hand)
+}
+}
+
+
+
+
+package AI_facilities {
+class AI {
++Card determine_move()
++void move(Card card)
+}
+}
+
+
+
+package Gameplay {
+
+class Playing_field {
+-Deck deck_player1
+-Deck deck_player2
+
+-Deck dump_player1
+-Deck dump_player2
+
+-vector<Creature*> melee_player1
+-vector<Creature*> archers_player1
+-vector<Creature*> siege_player1
+
+-vector<Creature*> melee_player2
+-vector<Creature*> archers_player2
+-vector<Creature*> siege_player2
+
+-uint strength_player1
+-uint strength_player2
+
+-vector<"Line spell"> line_spells
+
++void enum(vector<Creature*> line)
++void cleaning()
+}
+
+
+class Deck {
+-vector<Creature*>
+
++void pull()
++void insert()
+}
+
+class Hand {
+-Deck deck
++void put(Card card)
++void enum()
+}
+
+
+
+abstract class Card {
+-string title
++void pull()
+}
+
+
+abstract class Spell {
+-string description
++void describe()
++void interact()
+}
+
+
+class "Line spell" {
+-uint multiple
++void interact()
+}
+
+class "General purpose spell" {
++void interact()
+}
+
+
+
+class Creature {
+-uint strength
+-"Special ability" spAb
+}
+
+abstract class "Special ability" {
+-string description
++void describe()
++void interact()
+}
+
+
+
+class "Hero" {
++void interact()
+}
+class "Spy" {
++void interact()
+}
+class "Strong bond" {
++void interact()
+}
+class "Medic" {
++void interact()
+}
+class "Surge of strength" {
++void interact()
+}
+class "Using a spell" {
+-"Line spell" spell
++void interact()
+}
+class "Doppelganger" {
++void interact()
+}
+}
+
+
+
+Hand_graph <-- Hand
+Pl_field_graph <-- Playing_field
+
+Interface *-- Playing_field
+
+Playing_field *-- Deck
+Deck o-- Card
+Deck <|--* Hand
+
+Interface *-- Hand
+AI o-- Interface
+
+Card <|-- Creature
+Card <|-- Spell
+
+Creature *-- "Special ability"
+Spell <|-- "General purpose spell"
+Spell <|-- "Line spell"
+
+
+"Special ability" <|-- Hero
+"Special ability" <|-- Spy
+"Special ability" <|-- "Strong bond"
+"Special ability" <|-- Medic
+"Special ability" <|-- "Surge of strength"
+"Special ability" <|-- "Using a spell"
+"Line spell" --o "Using a spell"
+"Special ability" <|-- Doppelganger
+@enduml
