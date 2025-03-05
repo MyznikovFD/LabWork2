@@ -1,15 +1,5 @@
-Ability to recieve detailed information of cards.
+The configuration during development
 
-Ability to play PvP using one device:
-    -distribution of cards
-    -laying out of cards
-    -realization cards' actions
-    -determination a round winner
-    -reset of cards
-    -determination a game winner
-
-
-
-
-Ability to play PvE:
-    
+OS: ubuntu 22.04
+c++ version: c++17
+compiler: g++-11

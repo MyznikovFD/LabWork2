@@ -1,0 +1,26 @@
+@startuml
+package Players {
+[AI]
+[User]
+}
+
+package Display {
+[Game field display]
+[Hand display]
+[Card display]
+}
+package Gameplay {
+[Game field]
+[Hand]
+[Card]
+}
+
+User --> () Interface : use
+AI --> () Interface : use
+Interface --> Hand : manage
+Hand --> Card : use
+Hand --> [Game field] : change content
+Hand --> [Hand display] : set
+Card --> [Card display] : define
+[Game field] --> [Game field display] : set
+@enduml

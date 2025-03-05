@@ -19,7 +19,7 @@ GLOBAL DESCRIPTION:
     
     Leader may be choosen only in the beginning of a battle. 
     After choosing the Leader player recives 10 random selected cards from his deck, among these cards may be Spells and Creatures. Player may swap one or two of these cards to cards from the deck. 
-    In the beginning of each round except first player takes two cards from the deck.
+    In the beginning of each round except first player takes one cards from the deck.
     
     One player lays out one card in one move.    
     
