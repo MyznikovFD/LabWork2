@@ -28,4 +28,4 @@ jobs:
         run: make test
 
       - name: Run tests
-        run: ./test-Gwint
+        run: ./testGwint
