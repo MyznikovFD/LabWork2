@@ -1,0 +1,28 @@
+GLOBAL DESCRIPTION:
+    
+    A card game for two players or player and AI.
+    
+    THE MAIN GAME ENTITIES:
+
+    There are such cards as Creatures, Spells and Leaders.
+    Leader affects the characteristics of Creatures and Spells' actions during all the game.
+    Spells affect the characteristics of Creatures and other spells from the moment the card is played until the end of the round.
+    There are three types of Creatures such as Siege cards, Long-range cards, Melee cards. Every Creature has strength.
+    
+    The Playing Field divided in half, each half intended for one player and divided into three lines for three differrent types of Creatures.
+    
+    A Strength of player's army is summ of all Creatures on player's half of playing field.
+        
+    GAMEPLAY:
+    
+    One game (a battle) devided into three rounds, the result of the battle is based on results of these three rounds. One round divided into moves.
+    
+    Leader may be choosen only in the beginning of a battle. 
+    After choosing the Leader player recives 10 random selected cards from his deck, among these cards may be Spells and Creatures. Player may swap one or two of these cards to cards from the deck. 
+    In the beginning of each round except first player takes one card from the deck.
+    
+    One player lays out one card in one move.    
+    
+    Round ends if both players stop their moves, in particular, if their cards are over. 
+    If in the end of round Strengths of players' armies are equal, they both lose the round, else winner is that one whose army is stronger. 
+    If one player won two rounds, he won in the battle.
