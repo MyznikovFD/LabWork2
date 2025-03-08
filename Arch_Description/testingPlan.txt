@@ -1,0 +1,12 @@
+The testing should be provided un the following sequence:
+Testing of
+1) Setters-getters
+2) Gameplay classes:
+    -moving of cards among Deck, Hand, Game_field, dump
+    -Spells
+    -Special abilities
+    -count of armies' strengths
+3) Interface without graphics display
+4) Graphick display
+5) Interface with graphics display
+6) AI
