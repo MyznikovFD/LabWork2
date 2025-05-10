@@ -49,9 +49,19 @@ class Game_field {
 -vector<Creature*> archers_player1
 -vector<Creature*> siege_player1
 
+-vector<Creature*> melee_spells_player1
+-vector<Creature*> archery_spells_player1
+-vector<Creature*> siege_spells_player1
+
+
 -vector<Creature*> melee_player2
 -vector<Creature*> archers_player2
 -vector<Creature*> siege_player2
+
+-vector<Creature*> melee_spells_player2
+-vector<Creature*> archery_spells_player2
+-vector<Creature*> siege_spells_player2
+
 
 -uint strength_player1
 -uint strength_player2
@@ -64,17 +74,13 @@ class Game_field {
 
 
 class Deck {
--vector<Creature*>
+-vector<Card*>
 
 +void pull()
 +void insert()
 }
 
-class Hand {
--Deck deck
-+void put(Card card)
-+void enum()
-}
+
 
 
 
@@ -87,28 +93,29 @@ abstract class Card {
 abstract class Spell {
 -string description
 +void describe()
-+void interact()
++void pull()
 }
 
 
 class "Line spell" {
 -uint multiple
-+void interact()
++void pull()
 }
 
 class "General purpose spell" {
-+void interact()
-}
++void pull()
+}   
 
 
 
 class Creature {
 -uint strength
 -"Special ability" spAb
++void pull()
 }
 
 abstract class "Special ability" {
--string description
+string description
 +void describe()
 +void interact()
 }
@@ -132,7 +139,7 @@ class "Surge of strength" {
 }
 class "Using a spell" {
 -"Line spell" spell
-+void interact()
++void interact-()
 }
 class "Doppelganger" {
 +void interact()
