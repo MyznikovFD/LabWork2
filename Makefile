@@ -8,7 +8,7 @@ CXXFLAGS = -I. -std=c++17 -Werror -Wall -Wpedantic -g -fPIC
 
 TESTCXXFLAGS = $(CXXFLAGS) -lgtest -lgtest_main -lpthread
 
-DEPS = $(wildcard inlude/Gwint/*.h)
+DEPS = $(wildcard inlude/Gwent/*.h)
 
 SRC = $(wildcard src/*.cpp)
 TEST_SRC = $(wildcard tests/*.cpp)

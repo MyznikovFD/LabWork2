@@ -1,6 +1,0 @@
-The system configuration during development
-
-OS: ubuntu 22.04
-c++ version: c++17
-compiler: g++-11
-
