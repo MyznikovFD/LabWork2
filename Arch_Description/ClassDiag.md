@@ -35,17 +35,20 @@ package Core {
 
 package Players {
   abstract class Player {
-    #String name
-    #Hand hand
-    #Deck deck
-    #boolean hasPassed
+    -String name
+    -Hand hand
+    -Deck deck
+    -boolean hasPassed
     +void drawCard()
     +void playCard(Card card)
     +void pass()
     +void autoPassIfNoCards()
     +void replaceCards(List<Card> cardsToReplace)
-    +boolean hasPassed()
-  }
+    +boolean getHasPassed()
+    +String getName()
+    +Hand getHand()
+    +Deck getDeck()
+}
   
   class HumanPlayer {
     +void selectCard()
