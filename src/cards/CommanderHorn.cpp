@@ -1,20 +1,11 @@
-// CommanderHorn.h
-#ifndef COMMANDERHORN_H
-#define COMMANDERHORN_H
-#include "Card.h"
-#include "GameField.h" 
+#include "CommanderHorn.h"
+#include "GameField.h"
+
 /**
- * @brief Spell card CommanderHorn.
- *
- * Applies the effect: doubles the strength of all creatures.
+ * @brief Applies the CommanderHorn effect to the game field.
+ * @param field The game field.
  */
-class CommanderHorn : public Card {
-public:
-    CommanderHorn() : Card("CommanderHorn", 0) {}
-    void applyEffect(GameField& field) const override;
-    bool isSpell() const override 
-    { 
-        return true; 
-    }
-};
-#endif // COMMANDERHORN_H
+void CommanderHorn::applyEffect(GameField& field) const {
+    // CommanderHorn effect: double the strength of all creatures.
+    field.setCommanderHornActive(true);
+}

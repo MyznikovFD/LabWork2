@@ -1,20 +1,11 @@
-// ClearSky.h
-#ifndef CLEARSKY_H
-#define CLEARSKY_H
-#include "Card.h"
+#include "ClearSky.h"
 #include "GameField.h"
+
 /**
- * @brief Spell card ClearSky.
- *
- * Applies the effect: removes the BitingFrost effect.
+ * @brief Applies the ClearSky effect to the game field.
+ * @param field The game field.
  */
-class ClearSky : public Card {
-public:
-    ClearSky() : Card("ClearSky", 0) {}
-    void applyEffect(GameField& field) const override;
-    bool isSpell() const override 
-    { 
-        return true; 
-    }
-};
-#endif // CLEARSKY_H
+void ClearSky::applyEffect(GameField& field) const {
+    // ClearSky effect: remove BitingFrost effect only.
+    field.clearWeatherEffects();
+}
