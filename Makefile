@@ -1,59 +1,54 @@
-PROJECT = Gwint
-
-TESTPROJECT = test$(PROJECT)
+PROJECT = GwentSimplified
 
 CXX = g++
 
-CXXFLAGS = -I. -std=c++17 -Werror -Wall -Wpedantic -g -fPIC
+# Включаем корневой каталог и все подкаталоги в include
+CXXFLAGS = -I. -Iinclude -Iinclude/core -Iinclude/players -Iinclude/cards -Iinclude/display -Iinclude/utility -std=c++17 -Werror -Wall -Wpedantic -g -fPIC
 
-TESTCXXFLAGS = $(CXXFLAGS) -lgtest -lgtest_main -lpthread
+SRCDIR = src
+OBJDIR = $(SRCDIR)/obj
 
-DEPS = $(wildcard inlude/Gwent/*.h)
+# 1. Рекурсивный список всех исходных файлов
+SRC = $(wildcard $(SRCDIR)/core/*.cpp) \
+	  $(wildcard $(SRCDIR)/players/*.cpp) \
+	  $(wildcard $(SRCDIR)/cards/*.cpp) \
+	  $(wildcard $(SRCDIR)/display/*.cpp) \
+	  $(wildcard $(SRCDIR)/utility/*.cpp) \
+	  $(SRCDIR)/main.cpp
 
-SRC = $(wildcard src/*.cpp)
-TEST_SRC = $(wildcard tests/*.cpp)
+# 2. Плоский список объектных файлов в OBJDIR
+# Пример: src/core/Game.cpp -> Game.cpp -> Game.o -> src/obj/Game.o
+OBJ = $(patsubst %.cpp,$(OBJDIR)/%.o,$(notdir $(SRC)))
 
-OBJDIR = src/obj
-TEST_OBJDIR = tests/obj
+# 3. VPATH: Указываем make, где искать исходные файлы (.cpp)
+VPATH_DIRS = $(SRCDIR)/core $(SRCDIR)/players $(SRCDIR)/cards $(SRCDIR)/display $(SRCDIR)/utility $(SRCDIR)
+VPATH := $(VPATH_DIRS)
 
-OBJ = $(SRC:src/%.cpp=$(OBJDIR)/%.o)
-TEST_OBJ = $(TEST_SRC:tests/%.cpp=$(TEST_OBJDIR)/%.o)
+# Рекурсивный список всех заголовочных файлов для зависимостей
+DEPS = $(wildcard include/*/*.h)
 
 
-.PHONY: default
+.PHONY: default all clean
 
 default: all
 
-$(OBJDIR)/%.o: $(SRC) $(DEPS) | $(OBJDIR)
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-	
-$(TEST_OBJDIR)/%.o: $(TEST_SRC) | $(TEST_OBJDIR)
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+all: $(PROJECT)
 
-
+# Правило для линковки (использует плоский список OBJ)
 $(PROJECT): $(OBJ)
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
-$(TESTPROJECT): $(TEST_OBJ)
-	$(CXX) -o $@ $^ $(TESTCXXFLAGS)
+# Правило для компиляции:
+# - Цель: $(OBJDIR)/%.o (например, src/obj/Game.o)
+# - Предпосылка: %.cpp (например, Game.cpp, который будет найден через VPATH)
+# - | $(OBJDIR) гарантирует, что каталог src/obj будет создан перед компиляцией
+$(OBJDIR)/%.o: %.cpp $(DEPS) | $(OBJDIR)
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-
-
+# Простое правило для создания базового каталога
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
-$(TEST_OBJDIR):
-	mkdir -p $(TEST_OBJDIR)
-
-
-
-.PHONY: test
-
-test: $(TESTPROJECT)
-
-all: $(PROJECT)
 
 clean:
 	rm -rf $(OBJDIR)
-	rm -rf $(TEST_OBJDIR)
 	rm -f $(PROJECT)
-	rm -f $(TESTPROJECT)

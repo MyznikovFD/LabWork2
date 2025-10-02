@@ -7,6 +7,10 @@
 #define AIPLAYER_H
 
 #include "Player.h"
+#include "Card.h"
+#include "Deck.h"
+#include "Hand.h"
+#include "GameRenderer.h"
 
 /**
  * @brief Class representing an AI player.
@@ -14,6 +18,7 @@
  * Contains the logic for card selection and pass decisions.
  */
 class AIPlayer : public Player {
+    std::shared_ptr<GameRenderer> renderer;
 public:
     /**
      * @brief Constructor.
@@ -21,8 +26,10 @@ public:
      * @param playerDeck The player's deck.
      * @param playerHand The player's hand.
      */
-    AIPlayer(const std::string& playerName, std::unique_ptr<Deck> playerDeck, std::unique_ptr<Hand> playerHand);
-
+        AIPlayer(const std::string& playerName, 
+             std::unique_ptr<Deck> playerDeck, 
+             std::unique_ptr<Hand> playerHand, 
+             std::shared_ptr<GameRenderer> renderer);
     /**
      * @brief Selects a card to play based on AI strategy.
      * @return The card selected by the AI, or nullptr if the AI passes.

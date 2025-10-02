@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <utility>
 #include <iostream>
+#include <string>
 
 /**
  * @brief Constructor.
@@ -31,86 +32,37 @@ void Game::initializePlayers(GameMode mode) {
     std::unique_ptr<Deck> deck2 = std::make_unique<Deck>();
     std::unique_ptr<Hand> hand2 = std::make_unique<Hand>();
     
-    // Player 1 is always Human
-    player1 = std::make_unique<HumanPlayer>("Player 1 (Human)", std::move(deck1), std::move(hand1));
+    // Player 1 is always Human, requires renderer
+    player1 = std::make_unique<HumanPlayer>("Player 1 (Human)", std::move(deck1), std::move(hand1), renderer);
     
     // Player 2 is Human or AI
     if (mode == GameMode::HUMAN_VS_HUMAN) {
-        player2 = std::make_unique<HumanPlayer>("Player 2 (Human)", std::move(deck2), std::move(hand2));
-    } else { // HUMAN_VS_AI
-        player2 = std::make_unique<AIPlayer>("Player 2 (AI)", std::move(deck2), std::move(hand2));
+        player2 = std::make_unique<HumanPlayer>("Player 2 (Human)", std::move(deck2), std::move(hand2), renderer);
+    } else { // GameMode::HUMAN_VS_AI
+        player2 = std::make_unique<AIPlayer>("Player 2 (AI)", std::move(deck2), std::move(hand2), renderer);
     }
-    
-    // Player 1 starts
-    currentPlayer = player1.get();
-    otherPlayer = player2.get();
 }
 
 /**
- * @brief Sets the game mode.
+ * @brief Sets the game mode and initializes players.
  * @param mode The selected mode.
  */
 void Game::setGameMode(GameMode mode) {
+    // This is called by GameMenu before startGame
     initializePlayers(mode);
 }
 
 /**
- * @brief Starts the game.
+ * @brief Switches the current player's turn.
  */
-void Game::startGame() {
-    if (!player1 || !player2) {
-        // Should not happen if setGameMode was called, but as a safeguard
-        setGameMode(GameMode::HUMAN_VS_AI);
+void Game::switchTurn() {
+    // Only switch if the other player hasn't passed, otherwise the current player keeps turn until the round ends
+    if (!otherPlayer->hasPassed()) {
+        Player* temp = currentPlayer;
+        currentPlayer = otherPlayer;
+        otherPlayer = temp;
     }
-    
-    // 1. Deal 7 cards (Decks are already initialized and shuffled in their constructor)
-    for (int i = 0; i < 7; ++i) {
-        player1->getHand().addCard(player1->getDeck().drawCard());
-        player2->getHand().addCard(player2->getDeck().drawCard());
-    }
-    
-    // 2. Process card replacement
-    processCardReplacement(*player1);
-    
-    // Player 2 replacement: Human or AI logic
-    processCardReplacement(*player2);
-    
-    gameActive = true;
-}
-
-/**
- * @brief Runs the main game loop.
- */
-void Game::runGameLoop() {
-    while (gameActive) {
-        if (isRoundOver()) {
-            break;
-        }
-
-        // Check for auto-pass (no cards left)
-        if (currentPlayer->autoPassIfNoCards()) {
-            // Renderer output should inform the player of auto-pass
-            renderer->renderPassStatus(player1->getHasPassed(), player2->getHasPassed());
-            switchTurn();
-            continue;
-        }
-        
-        if (!currentPlayer->getHasPassed()) {
-            // Process current player's action (play card or pass)
-            processTurn();
-        } else {
-            // If current player has already passed, skip turn and switch
-            switchTurn();
-        }
-
-        // Always render status after a turn is completed
-        renderer->renderGameField(field);
-        renderer->renderScores(field.getPlayer1Score(), field.getPlayer2Score());
-        renderer->renderHand(player1->getHand(), true);
-        renderer->renderHand(player2->getHand(), (player2.get() == player1.get())); // Hide AI hand
-        renderer->renderPassStatus(player1->getHasPassed(), player2->getHasPassed());
-    }
-    gameActive = false;
+    // If otherPlayer has passed, the current player continues their turn until they also pass.
 }
 
 /**
@@ -118,15 +70,126 @@ void Game::runGameLoop() {
  * @return true if the round is over, false otherwise.
  */
 bool Game::isRoundOver() const {
-    // Round ends when both players have passed
-    return player1->getHasPassed() && player2->getHasPassed();
+    return player1->hasPassed() && player2->hasPassed();
 }
 
 /**
- * @brief Switches the current player's turn.
+ * @brief Starts the game.
+ *
+ * Initializes decks, deals cards, and begins the replacement phase.
  */
-void Game::switchTurn() {
-    std::swap(currentPlayer, otherPlayer);
+void Game::startGame() {
+    // 1. Reset state for the start of a new game
+    gameActive = true;
+    
+    // 2. Initial deck creation (assuming Deck::fillDeck exists)
+    player1->getDeck()->fillDeck();
+    player2->getDeck()->fillDeck();
+
+    // 3. Draw starting hands (assuming Player::drawStartingHand exists)
+    player1->drawStartingHand();
+    player2->drawStartingHand();
+    
+    // 4. Determine starting player (e.g., player1 starts)
+    currentPlayer = player1.get();
+    otherPlayer = player2.get();
+
+    // 5. Card Replacement Phase
+    renderer->displayMessage("\n--- Card Replacement Phase ---");
+    processCardReplacement(*player1);
+    processCardReplacement(*player2);
+
+    // 6. Initial Game State Rendering
+    renderer->displayMessage("\n--- GAME START ---");
+}
+
+/**
+ * @brief Runs the main game loop.
+ */
+void Game::runGameLoop() {
+    int player1Wins = 0;
+    int player2Wins = 0;
+    const int MAX_ROUNDS = 3;
+
+    // Check if players were initialized (safeguard)
+    if (!player1 || !player2) {
+        renderer->displayMessage("Error: Players not initialized. Cannot run game loop.");
+        return;
+    }
+
+    for (int round = 1; round <= MAX_ROUNDS; ++round) {
+        if (player1Wins >= 2 || player2Wins >= 2) {
+            break; // Game is over if someone reached 2 wins
+        }
+
+        // --- Round Setup ---
+        field = GameField(); // Clear the field and reset effects
+        player1->unpass();
+        player2->unpass();
+        
+        // Draw one card per round for both players (simplified Gwent rule)
+        player1->drawCard();
+        player2->drawCard();
+
+        renderer->renderRoundStart(round);
+        
+        // Ensure starting player is correct for the round (can alternate or be based on previous winner)
+        // Alternate starting player for subsequent rounds
+        if (round > 1) {
+            Player* startingPlayer = (currentPlayer == player1.get()) ? player2.get() : player1.get();
+            currentPlayer = startingPlayer;
+            otherPlayer = (currentPlayer == player1.get()) ? player2.get() : player1.get();
+        }
+
+        // --- Main Turn Loop ---
+        while (gameActive && !isRoundOver()) {
+            
+            // Render state
+            renderer->renderGameField(field);
+            renderer->renderScores(field.getPlayer1Score(), field.getPlayer2Score());
+            renderer->renderHand(currentPlayer->getHand(), currentPlayer == player1.get());
+            renderer->renderPassStatus(player1->hasPassed(), player2->hasPassed());
+            renderer->renderTurnStart(currentPlayer->getName());
+
+            // Process move (plays card or passes)
+            bool moveMade = processTurn();
+            
+            if (!moveMade) {
+                // This means the current player failed to make a valid move (e.g., invalid input for Human)
+                // The turn remains with the current player.
+                renderer->displayMessage("Invalid action. Please enter a valid card number or 'pass'.");
+            }
+        }
+        
+        // --- Round End Logic ---
+        int p1Score = field.getPlayer1Score();
+        int p2Score = field.getPlayer2Score();
+        
+        renderer->displayMessage("\n*** Round " + std::to_string(round) + " Results ***");
+        
+        if (p1Score > p2Score) {
+            player1Wins++;
+            renderer->displayMessage(player1->getName() + " wins Round " + std::to_string(round) + "!");
+        } else if (p2Score > p1Score) {
+            player2Wins++;
+            renderer->displayMessage(player2->getName() + " wins Round " + std::to_string(round) + "!");
+        } else {
+            // Draw: both players get a win point (simplified Gwent rule)
+            player1Wins++; 
+            player2Wins++;
+            renderer->displayMessage("Round " + std::to_string(round) + " is a Draw!");
+        }
+        
+        // Final score display for the round (using a renderer method for final score display)
+        renderer->renderGameEnd(p1Score, p2Score);
+
+        // Update player wins state
+        player1->setWins(player1Wins);
+        player2->setWins(player2Wins);
+    }
+    
+    // Set game inactive after the loops finish
+    gameActive = false;
 }
 
 /**
@@ -134,50 +197,62 @@ void Game::switchTurn() {
  * @return true if a move was made and the game should continue, false otherwise.
  */
 bool Game::processTurn() {
-    // 1. Get action from Player (card or pass)
-    // The player's method handles the play/pass decision internally
-    std::shared_ptr<const Card> cardToPlay = currentPlayer->chooseCardToPlay();
+    if (currentPlayer->hasPassed()) {
+        switchTurn(); // Move to the other player if current one has passed
+        return true;
+    }
+
+    // Get the card the player wants to play (nullptr if they choose to pass)
+    std::shared_ptr<const Card> cardToPlay = currentPlayer->playCard(field);
     
     if (cardToPlay) {
-        // Player chose to play a card
+        // A card was played
         
-        // Remove card from hand
-        if (!currentPlayer->getHand().removeCard(cardToPlay)) {
-            // Should not happen if Player::chooseCardToPlay is implemented correctly
+        if (cardToPlay->isSpell()) {
+            // If a spell was played, it applies effect and its done
+            cardToPlay->applyEffect(field);
+        } else {
+            // If it's a creature, add it to the field
+            bool isPlayer1 = (currentPlayer == player1.get());
+            field.addCard(cardToPlay, isPlayer1);
+        }
+        
+        // Card is removed from hand (done inside Player::playCard, but check is for safety)
+        if (currentPlayer->getHand().removeCard(cardToPlay)) {
+            // Card successfully removed from hand
+        } else {
+            // Should not happen, but indicates logic error
+            renderer->displayMessage("Error: Played card not found in hand!");
             return false;
         }
 
-        // Apply card effect
-        cardToPlay->applyEffect(field);
-
-        // Place card on field (if it's a creature card, GameField::addCard handles the check)
-        bool isPlayer1 = (currentPlayer == player1.get());
-        field.addCard(cardToPlay, isPlayer1);
-        
         // Pass turn
         switchTurn();
         return true;
         
     } else {
-        // Player chose to pass (cardToPlay is nullptr)
+        // Player chose to pass (cardToPlay is nullptr returned by Player::playCard)
+        // Check if the player is allowed to pass
         if (currentPlayer->decideIfPass()) {
             currentPlayer->pass();
+            renderer->displayMessage(currentPlayer->getName() + " passes.");
             switchTurn();
             return true;
         }
         
-        // The player's method returned nullptr but decideIfPass() said no pass.
-        // This means the player wants to cancel the pass and re-select (not supported in this stub).
+        // This path is mainly for AI not deciding to pass, or error in HumanPlayer's pass logic.
         return false;
     }
 }
+
 
 /**
  * @brief Processes the initial card replacement phase.
  * @param player The player performing the replacement.
  */
 void Game::processCardReplacement(Player& player) {
-    // STUB: Logic for card replacement
+    // Render hand for context
+    renderer->renderHand(player.getHand(), true);
     
     std::vector<std::shared_ptr<const Card>> cardsToReplace;
     
@@ -185,11 +260,15 @@ void Game::processCardReplacement(Player& player) {
     AIPlayer* aiPlayer = dynamic_cast<AIPlayer*>(&player);
 
     if (humanPlayer) {
-        // STUB: Requires renderer interaction
-        cardsToReplace = renderer->renderCardReplacementInterface(humanPlayer->getHand());
+        // Human logic is handled inside HumanPlayer::selectCardsToReplace, which uses the renderer
+        cardsToReplace = humanPlayer->selectCardsToReplace();
     } else if (aiPlayer) {
-        // AI logic
+        // AI logic is handled inside AIPlayer::chooseCardsToReplace
         cardsToReplace = aiPlayer->chooseCardsToReplace();
+        // Inform user about AI's choice (required for human player experience)
+        if (!cardsToReplace.empty()) {
+            std::cout << player.getName() << " replaced " << cardsToReplace.size() << " cards.\n";
+        }
     }
     
     player.replaceCards(cardsToReplace);
@@ -199,17 +278,18 @@ void Game::processCardReplacement(Player& player) {
  * @brief Checks the win condition and announces the result.
  */
 void Game::checkWinCondition() {
-    int score1 = field.getPlayer1Score();
-    int score2 = field.getPlayer2Score();
-    
-    std::string winnerName;
-    if (score1 > score2) {
-        winnerName = player1->getName();
-    } else if (score2 > score1) {
-        winnerName = player2->getName();
-    } else {
-        winnerName = "It's a tie!";
-    }
+    int p1Wins = player1->getWins();
+    int p2Wins = player2->getWins();
 
-    renderer->renderWinCondition(winnerName);
+    renderer->displayMessage("\n*** FINAL GAME RESULTS ***");
+    
+    if (p1Wins > p2Wins) {
+        renderer->renderWinCondition(player1->getName());
+    } else if (p2Wins > p1Wins) {
+        renderer->renderWinCondition(player2->getName());
+    } else {
+        // Use renderGameEnd (which shows scores) for a draw.
+        renderer->renderGameEnd(p1Wins, p2Wins); 
+    }
 }
+

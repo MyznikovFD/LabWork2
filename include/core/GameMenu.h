@@ -9,6 +9,7 @@
 #include <memory>
 #include "Game.h"
 #include "GameRenderer.h"
+#include "Deck.h"
 
 /**
  * @brief Class managing the main menu and game mode selection.

@@ -1,3 +1,4 @@
+
 /**
  * @file Game.h
  * @brief Defines the Game class, managing the overall game process.
@@ -7,10 +8,19 @@
 #define GAME_H
 
 #include <memory>
+#include <string>
 #include "GameField.h"
 #include "Player.h"
-#include "GameMode.h"
 #include "GameRenderer.h"
+#include "Deck.h"
+#include "Hand.h"
+#include "GameMode.h"
+
+// --- PRELIMINARY DECLARATION ---
+class Player;
+class HumanPlayer;
+class AIPlayer;
+class Card;
 
 /**
  * @brief Class controlling the main game flow.

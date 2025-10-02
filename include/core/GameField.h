@@ -54,6 +54,24 @@ public:
      * @param active The new activity state.
      */
     void setBitingFrostActive(bool active);
+    /**
+     * @brief Checks if CommanderHorn is active.
+     * @return true if CommanderHorn is active.
+     */
+
+    bool isCommanderHornActive() const
+    { 
+        return commanderHornActive; 
+    }
+
+    /**
+     * @brief Checks if BitingFrost is active.
+     * @return true if BitingFrost is active.
+     */
+    bool isBitingFrostActive() const
+    { 
+        return bitingFrostActive; 
+    }
 
     /**
      * @brief Clears weather effects (specifically BitingFrost).
